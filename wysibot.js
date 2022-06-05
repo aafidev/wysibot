@@ -77,43 +77,50 @@ function BotStart() {
 
 					var processed_tweets = [];
 
-					for (var i = 0; i < data.statuses.length; i++) {
+					for (var i = 0; i < data.statuses.length; i++) {	
 
-						// Tweet id
-						var id = data.statuses[i].id_str;
-
-						// User id and handle
-						var userId = data.statuses[i].user.id_str;
 						var userHandle = data.statuses[i].user.screen_name;
 
-						// If id doesn't exist on database, process it
-						if (bot_db.indexOf(id) == -1) {
+						if (userHandle !== "osunumberbot") {
+							// Ignore tweets from the bot
+							// Process variables like this if it is not the bot for optimization purposes
 
-							processed_tweets.push(id);
+							// Tweet id
+							var id = data.statuses[i].id_str;
 
-							fs.appendFile(DB_FILE, id + "\n", function (err) {
-								if (err) {
-									console.log("Error on save to '" + DB_FILE + "' file.");
-								}
-						  	});
+							// User id and handle
+							var userId = data.statuses[i].user.id_str;
 
-							// Like
-							Bot.post('favorites/create', {id: id}, function(err, response){
-						        if (err) {
-						           console.log("> Error: Tweet " + id + " could not be favorited. " + err);
-						        }
-						    });
+							// If id doesn't exist on database, process it
+							if (bot_db.indexOf(id) == -1) {
 
-							// Reply
-							var textToReply = TWEETS_TO_REPLY[Math.floor(Math.random()*TWEETS_TO_REPLY.length)];
-							textToReply = "Hey @" + userHandle + ". " + textToReply;
-							Bot.post('statuses/update', {status: textToReply, in_reply_to_status_id: id}, function(err, response){
-						        if (err) {
-						          console.log("> Error: Status could not be updated. " + err);
-						        }
-						    });
+								processed_tweets.push(id);
 
+								fs.appendFile(DB_FILE, id + "\n", function (err) {
+									if (err) {
+										console.log("Error on save to '" + DB_FILE + "' file.");
+									}
+								});
+
+								// Like
+								Bot.post('favorites/create', {id: id}, function(err, response){
+									if (err) {
+									console.log("> Error: Tweet " + id + " could not be favorited. " + err);
+									}
+								});
+
+								// Reply
+								var textToReply = TWEETS_TO_REPLY[Math.floor(Math.random()*TWEETS_TO_REPLY.length)];
+								textToReply = "Hey @" + userHandle + ". " + textToReply;
+								Bot.post('statuses/update', {status: textToReply, in_reply_to_status_id: id}, function(err, response){
+									if (err) {
+									console.log("> Error: Status could not be updated. " + err);
+									}
+								});
+							}
 						}
+
+						
 
 					}
 
